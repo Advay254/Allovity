@@ -1,0 +1,20 @@
+<div class="drawer" id="site-drawer" data-open="false" inert>
+  <div class="drawer__scrim" data-drawer-close></div>
+  <div class="drawer__panel" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="drawer__head">
+      <span class="eyebrow">Menu</span>
+      <button type="button" class="btn btn-secondary h-11 w-11 min-h-0 px-0" data-drawer-close aria-label="Close menu"><%- icon('x', 'h-5 w-5') %></button>
+    </div>
+    <nav aria-label="Mobile">
+      <ul class="drawer__nav">
+        <% nav.forEach(function (item) { %>
+        <li><a class="drawer__link" href="<%= item.href %>" data-drawer-close data-nav-link><%= item.label %></a></li>
+        <% }) %>
+      </ul>
+    </nav>
+    <div class="flex flex-col gap-4">
+      <%- include('theme-control') %>
+      <a class="btn btn-primary" href="<%= headerCta.href %>" data-drawer-close><%= headerCta.label %></a>
+    </div>
+  </div>
+</div>

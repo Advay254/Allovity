@@ -1,0 +1,49 @@
+@layer components {
+  .btn {
+    @apply inline-flex min-h-[44px] cursor-pointer select-none items-center justify-center gap-2 rounded-md px-5 font-sans text-small font-semibold leading-none;
+    @apply transition-[background-color,border-color,color,transform] duration-fast ease-out;
+  }
+
+  .btn:active:not(:disabled):not([aria-disabled='true']) {
+    transform: scale(0.97);
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-fg shadow-elev-1;
+  }
+
+  .btn-primary:hover:not(:disabled):not([aria-disabled='true']) {
+    @apply bg-primary-hover;
+  }
+
+  .btn-secondary {
+    @apply border border-line-strong bg-transparent text-fg;
+  }
+
+  .btn-secondary:hover:not(:disabled):not([aria-disabled='true']) {
+    @apply border-fg bg-surface;
+  }
+
+  .btn-sm {
+    @apply min-h-[40px] px-4;
+  }
+
+  .btn-lg {
+    @apply min-h-[52px] px-7 text-body;
+  }
+
+  .btn:disabled,
+  .btn[aria-disabled='true'] {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  .btn[aria-busy='true'] {
+    @apply pointer-events-none;
+  }
+
+  .btn[aria-busy='true']::before {
+    content: '';
+    @apply h-4 w-4 animate-spin rounded-full border-2 border-current;
+    border-right-color: transparent;
+  }
+}

@@ -1,0 +1,17 @@
+<header class="site-header" data-drawer-background>
+  <div class="container-site site-header__bar">
+    <a href="/" class="wordmark" aria-label="<%= site.name %>, home"><%- include('symbol') %><span><%= site.name %></span></a>
+    <nav class="nav-desktop" aria-label="Primary">
+      <ul class="nav-list">
+        <% nav.forEach(function (item) { %>
+        <li><a class="nav-link" href="<%= item.href %>" data-nav-link><%= item.label %></a></li>
+        <% }) %>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <div class="theme-control-desktop"><%- include('theme-control') %></div>
+      <a class="btn btn-primary btn-sm header-cta" href="<%= headerCta.href %>"><%= headerCta.label %></a>
+      <button type="button" class="menu-button" data-drawer-open aria-expanded="false" aria-controls="site-drawer" aria-label="Open menu"><%- icon('menu', 'h-5 w-5') %></button>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,19 @@
+<footer class="site-footer" data-drawer-background>
+  <div class="container-site">
+    <div class="footer-grid">
+      <div class="flex max-w-sm flex-col gap-3">
+        <span class="wordmark"><%- include('symbol') %><span><%= site.name %></span></span>
+        <p class="text-small text-muted"><%= site.descriptor %></p>
+        <p class="font-display text-h3 font-semibold"><%= site.tagline %></p>
+      </div>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <% footerLinks.forEach(function (item) { %>
+          <li><a class="footer-link" href="<%= item.href %>"><%= item.label %></a></li>
+          <% }) %>
+        </ul>
+      </nav>
+    </div>
+    <p class="footer-meta">&copy; <span class="tabular-nums"><%= year %></span> <%= site.name %>. All rights reserved.</p>
+  </div>
+</footer>

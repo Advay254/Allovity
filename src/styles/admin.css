@@ -1,0 +1,66 @@
+@import '../../build/generated/fonts.css';
+@import './base.css';
+@import './buttons.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .admin-shell {
+    @apply flex min-h-screen flex-col bg-bg;
+  }
+
+  .admin-bar {
+    @apply flex h-14 items-center justify-between gap-4 border-b border-line px-4 xs:px-6;
+  }
+
+  .admin-brand {
+    @apply inline-flex items-center gap-2.5 font-mono text-caption font-medium uppercase tracking-[0.14em] text-muted;
+  }
+
+  .admin-brand svg {
+    @apply h-6 w-6 shrink-0;
+  }
+
+  .admin-main {
+    @apply grid flex-1 place-items-center px-4 py-12 xs:px-6;
+  }
+
+  .admin-panel {
+    @apply w-full max-w-[28rem] rounded-lg border border-line bg-surface p-6 shadow-elev-1 xs:p-8;
+  }
+
+  .admin-icon {
+    @apply mb-6 grid h-12 w-12 place-items-center rounded-md border border-line-strong text-link;
+  }
+
+  .admin-icon svg {
+    @apply h-6 w-6;
+  }
+
+  .admin-status {
+    @apply inline-flex items-center gap-2 rounded-sm border border-warning/50 bg-warning/10 px-2.5 py-1 font-mono text-caption font-medium text-warning;
+  }
+
+  .admin-status::before {
+    content: '';
+    @apply h-1.5 w-1.5 rounded-full bg-warning;
+  }
+
+  .admin-kv {
+    @apply mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 border-t border-line pt-5 font-mono text-caption;
+  }
+
+  .admin-kv dt {
+    @apply text-muted;
+  }
+
+  .admin-kv dd {
+    @apply text-fg;
+  }
+
+  .admin-foot {
+    @apply border-t border-line px-4 py-4 text-caption text-muted xs:px-6;
+  }
+}

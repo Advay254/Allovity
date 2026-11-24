@@ -1,0 +1,40 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="container-site hero__inner">
+    <div class="hero__content">
+      <p class="eyebrow"><%= site.descriptor %></p>
+      <h1 id="hero-title" class="mt-5 font-display text-display font-bold">Engineering what's next.</h1>
+      <p class="lead reveal mt-6 max-w-2xl">We create software products that make technology more useful, accessible and powerful.</p>
+      <div class="reveal-late mt-10">
+        <a class="btn btn-primary btn-lg" href="#studio">Explore products <%- icon('arrow-down', 'h-5 w-5') %></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="studio" class="studio" aria-labelledby="studio-title">
+  <div class="container-site studio__grid">
+    <div class="studio__statement">
+      <div class="section-heading">
+        <p class="eyebrow">The studio</p>
+        <h2 id="studio-title" class="text-h1 font-bold">
+          <span class="block">Independent products.</span>
+          <span class="block text-muted">Thoughtful engineering.</span>
+          <span class="block text-muted">Real-world solutions.</span>
+        </h2>
+      </div>
+    </div>
+    <div id="capabilities" class="studio__caps">
+      <h3 class="eyebrow">Capabilities</h3>
+      <ol class="cap-list">
+        <% capabilities.forEach(function (cap, index) { %>
+        <li class="cap">
+          <span class="cap__index"><%= String(index + 1).padStart(2, '0') %></span>
+          <span class="cap__label"><%= cap.label %></span>
+          <%- icon(cap.icon, 'cap__icon') %>
+        </li>
+        <% }) %>
+      </ol>
+    </div>
+  </div>
+</section>

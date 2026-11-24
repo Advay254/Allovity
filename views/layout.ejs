@@ -1,0 +1,51 @@
+<%
+  var title = meta.title ? meta.title + ' | ' + site.name : site.name + ' | ' + site.descriptor;
+  var description = meta.description || site.description;
+  var canonical = meta.canonicalPath ? absoluteUrl(meta.canonicalPath) : null;
+  var image = absoluteUrl(meta.image || asset('brand.og-image.png'));
+%><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <% if (canonical) { %><link rel="canonical" href="<%= canonical %>"><% } %>
+  <% if (meta.noindex) { %><meta name="robots" content="noindex, nofollow"><% } %>
+  <meta name="theme-color" content="<%= site.themeColor.dark %>" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="<%= site.themeColor.light %>" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" href="<%= asset('brand.symbol.svg') %>" type="image/svg+xml">
+  <link rel="icon" href="<%= asset('brand.favicon-32.png') %>" type="image/png" sizes="32x32">
+  <link rel="icon" href="<%= asset('brand.favicon-16.png') %>" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="<%= asset('brand.apple-touch-icon.png') %>">
+  <meta property="og:site_name" content="<%= site.name %>">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= title %>">
+  <meta property="og:description" content="<%= description %>">
+  <% if (canonical) { %><meta property="og:url" content="<%= canonical %>"><% } %>
+  <meta property="og:image" content="<%= image %>">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="<%= site.name %>. <%= site.tagline %>">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= title %>">
+  <meta name="twitter:description" content="<%= description %>">
+  <meta name="twitter:image" content="<%= image %>">
+  <link rel="preload" href="<%= asset('font.space-grotesk') %>" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="<%= asset('font.inter') %>" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="<%= asset('public.css') %>">
+  <script src="<%= asset('theme-init.js') %>"></script>
+</head>
+<body data-page="<%= meta.pageId %>">
+  <a class="skip-link" href="#main" data-drawer-background>Skip to main content</a>
+  <%- include('partials/header') %>
+  <main id="main" tabindex="-1" data-drawer-background>
+    <%- body %>
+  </main>
+  <%- include('partials/footer') %>
+  <%- include('partials/drawer') %>
+  <script src="<%= asset('site.js') %>" defer></script>
+  <% if (meta.pageScript) { %><script src="<%= asset(meta.pageScript) %>" defer></script><% } %>
+</body>
+</html>
