@@ -8,5 +8,5 @@
 - Security baseline: strict content security policy with no inline allowances, security headers, rate limiter, safe client IP handling.
 - Design system, shared layout, header with mobile drawer, footer, theme control (system, light, dark).
 - Public pages: home, custom 404 and 500, liveness and readiness endpoints, robots.txt and a minimal sitemap.xml.
-- Admin entrance placeholder at the secret path.
-- Dockerfile, Render blueprint, deployment guide, environment reference, placeholder brand assets.
+- Admin entrance placeholder at a secret path (4 to 20 characters, set by the owner).
+- Dockerfile, host-neutral deployment guide, optional example Render blueprint, environment reference, placeholder brand assets.

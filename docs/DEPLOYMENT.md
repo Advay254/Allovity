@@ -1,72 +1,68 @@
 # Deployment guide
 
-Written for a phone. Everything happens in the Render dashboard and on GitHub. Nothing needs a terminal.
+This guide is for whoever deploys the site. It does not assume a particular host. The app is a standard Node service that ships with a Dockerfile, needs a PostgreSQL database, and is configured only through environment variables.
 
-## Before you start
+## What any host must provide
 
-You need a Render account connected to your GitHub account, and the Allovity repository on GitHub. Decide two values first:
+| Requirement           | Detail                                                                                                                        |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| A way to run the app  | Either the included `Dockerfile` (`docker build .`), or Node 22 or newer with `npm install`, `npm run build` and `npm start`. |
+| PostgreSQL            | Any reasonably current version. The app creates its own tables on startup. No manual SQL is needed.                           |
+| HTTPS                 | Terminate TLS at the host, load balancer or reverse proxy. The app sends strict transport security in production.             |
+| Environment variables | The three required ones plus any optional ones. See `docs/ENVIRONMENT.md`.                                                    |
+| A health check        | Point it at `/healthz` (process is alive). `/readyz` also checks the database.                                                |
 
-1. **Site address.** Before you point a domain, use the address Render gives the service (it ends in `.onrender.com`). You can change it later.
-2. **Admin path slug.** A long random value of at least 16 characters, using only letters, digits, underscore and hyphen. Use your password manager's generator with symbols turned off, length 24 or more. Save it in the password manager. Do not use the example from `.env.example`: the app refuses it.
+## Settings you must choose
 
-## Deploy on Render
+- **`PUBLIC_SITE_URL`**: the public address, for example `https://www.example.com`. It is used for canonical links, the social image and the sitemap. If you do not have a domain yet, use the address your host assigns and change it later.
+- **`ADMIN_PATH_SLUG`**: a secret path segment for the admin entrance, 4 to 20 characters using letters, digits, underscore and hyphen. Longer and random is better: 12 or more characters is recommended and shorter values log a warning. Generate it with a password manager or any random generator. The app refuses values that still look like the example placeholder.
+- **`DATABASE_URL`**: the connection string of your PostgreSQL database.
+- **`TRUSTED_PROXY_HOPS`**: how many proxies sit between the internet and the app. Most platforms put exactly one in front (use `1`). Leave it at `0` only if visitors reach the app directly. A wrong value either lets visitors spoof their IP address or makes everyone look like one visitor to the rate limiter.
+- **`NODE_ENV=production`**.
 
-1. In the Render dashboard, tap **New**, then **Blueprint**.
-2. Pick the Allovity repository. Render reads `render.yaml` and shows one web service (`allovity`) and one database (`allovity-db`).
-3. Render asks for the values that are not stored in the repository:
-   - `PUBLIC_SITE_URL`: your site address, for example `https://allovity.onrender.com` for now. Include `https://` and no trailing path.
-   - `ADMIN_PATH_SLUG`: the slug you saved.
-4. Tap **Apply**. Render creates the database, builds the Docker image and starts the service. The first build takes a few minutes.
-5. The connection string (`DATABASE_URL`) and `TRUSTED_PROXY_HOPS=1` are filled in by the Blueprint. You do not need to enter them.
+## Generic deployment steps
 
-Nothing else is needed: the database schema creates itself when the app starts.
+1. Create a PostgreSQL database and note its connection string.
+2. Create the service from this repository (container image or Node build) and set the environment variables above. Keep them in the host's secret or environment settings, never in the repository.
+3. Set the health check path to `/healthz`.
+4. Deploy. On first start the app applies its database migrations automatically.
+5. Attach your domain and HTTPS certificate through your host, then set `PUBLIC_SITE_URL` to the final address and restart.
 
-### Confirm it worked
+## Confirm it worked
 
-Open the service, then **Logs**. A healthy first start shows these lines, in this order:
+In the service logs a healthy start shows, in this order:
 
 - `"msg":"Migration applied","migration":"0001_foundation.sql"` (on later starts: `"msg":"Database schema is up to date"`)
 - `"msg":"Server listening"`
 
-Then check in your phone browser:
+Then request these paths on your address:
 
-- `https://YOUR-ADDRESS/healthz` shows `{"status":"ok"}`.
-- `https://YOUR-ADDRESS/readyz` shows `{"status":"ready"}`. If it shows `{"status":"unavailable"}`, the app cannot reach the database: check the database is available and that `DATABASE_URL` is set.
-- `https://YOUR-ADDRESS/` shows the home page.
-- `https://YOUR-ADDRESS/admin` shows the 404 page. `https://YOUR-ADDRESS/YOUR-SLUG` shows the admin placeholder.
+- `/healthz` returns `{"status":"ok"}`.
+- `/readyz` returns `{"status":"ready"}`. `{"status":"unavailable"}` means the app cannot reach the database: check `DATABASE_URL` and database availability.
+- `/` shows the home page.
+- `/admin` shows the 404 page, and `/YOUR-SLUG` shows the admin placeholder.
+- `/robots.txt` shows a sitemap line with your address.
 
-Startup stops with a message naming the variable if a required setting is missing or invalid. The message appears at the top of the logs. It never contains the value.
+If a required variable is missing or invalid, startup stops and the first log line names the variable. It never prints the value.
 
-### Point your domain
+## Rolling back
 
-1. In the service, open **Settings**, then **Custom Domains**, then add your domain.
-2. Render shows the DNS records to create. Add exactly those at your domain registrar's DNS page (usually a CNAME for `www`, and an A or ALIAS record for the bare domain).
-3. Wait for DNS to update. Render issues the HTTPS certificate automatically once it can verify the records.
-4. Change `PUBLIC_SITE_URL` in **Environment** to your final address (for example `https://www.example.com`). Save. Render restarts the service.
-5. Check `https://YOUR-DOMAIN/robots.txt`: the sitemap line should show your domain.
+Redeploy the previous image or commit using your host's mechanism. Rolling back changes code only and never reverses database changes. Migrations only add things, so an older version keeps working against a newer schema. Never edit a migration file after it has been applied anywhere: the app refuses to start if it detects that. Add a new numbered file instead.
 
-### Roll back
+## Production checklist
 
-1. Open the service, then **Deploys** (or **Events**).
-2. Find the last deploy that worked, open it and choose **Rollback**. If you do not see that option, use **Manual Deploy** with an earlier commit.
-3. Rolling back changes the code only. It never reverses database changes. Migrations only add things, so an older version keeps working against a newer schema.
+- The database is reachable only from the app, and its credentials are not committed anywhere.
+- Backups are enabled, and you have restored one into a separate database at least once.
+- `NODE_ENV=production`, `TRUSTED_PROXY_HOPS` matches your setup, and `PUBLIC_SITE_URL` uses `https`.
+- Free or hobby tiers often sleep when idle or limit databases. Use a plan that fits a live site.
+- Logs are kept somewhere you can read them. The app writes one JSON line per event to standard output.
 
-## Free plans and production
+## Platform notes
 
-`render.yaml` uses free plans so a first deploy costs nothing. Free plans are not suitable for a real site:
+These are starting points. Platform interfaces change, so check each platform's own documentation.
 
-- A free web service sleeps when idle, so the first visit after a quiet period is slow.
-- A free database can expire and has limited backups. Check Render's current pricing page for the exact limits.
-
-For production, change the plans in `render.yaml` (web to a paid plan such as `starter`, database to a paid plan such as `basic-256mb`) and commit. Then confirm that backups exist and that you have restored one into a separate database to prove it works. A backup that has never been restored is not a backup you can count on.
-
-## Other hosts
-
-The app is a standard Docker image with a health check, so it runs anywhere containers run. On any host set the variables in `docs/ENVIRONMENT.md` and keep these in mind:
-
-- **Railway.** Create a project from the GitHub repository and add a Postgres service. Set the variables, with `DATABASE_URL` referencing the Postgres service. Health check path `/healthz`. Set `TRUSTED_PROXY_HOPS=1`.
-- **Fly.io.** Needs the `flyctl` command line tool, so it is awkward from a phone. Use a Fly Postgres or an external one, set the variables as secrets, and set `TRUSTED_PROXY_HOPS=1`.
-- **VPS.** Run the Docker image behind a reverse proxy such as Caddy or Nginx that terminates HTTPS. Set `TRUSTED_PROXY_HOPS` to the number of proxies in front of the app. Back up the database yourself.
-- **Hostinger.** Only a Hostinger VPS plan suits this app. Shared and website-builder plans cannot run a Node server with Postgres.
-
-Whatever the host: the database must be reachable only from the app, `DATABASE_URL` must never be committed, and the health check should point at `/healthz`.
+- **Render.** `deploy/render.yaml` is an example Blueprint for one web service and one database. Render reads `render.yaml` from the repository root by default, so copy it there (or set the Blueprint file path) before choosing New, then Blueprint. It prompts for `PUBLIC_SITE_URL` and `ADMIN_PATH_SLUG`, wires `DATABASE_URL` from the database and sets `TRUSTED_PROXY_HOPS=1`. The plans in the file are free ones. Change them for production.
+- **Railway.** Create a project from the repository, add a PostgreSQL service and reference its connection string in `DATABASE_URL`. Set `TRUSTED_PROXY_HOPS=1` and the health check path.
+- **Fly.io.** Use the Dockerfile with `fly launch`, attach a Postgres database and set the variables as secrets. `TRUSTED_PROXY_HOPS=1`.
+- **Any VPS or bare server.** Run the Docker image (or Node directly) behind a reverse proxy such as Caddy or Nginx that terminates HTTPS. Set `TRUSTED_PROXY_HOPS` to the number of proxies in front of the app and take care of database backups yourself.
+- **Shared hosting and website builders.** These generally cannot run a long-lived Node server with PostgreSQL and are not suitable.

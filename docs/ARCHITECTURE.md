@@ -20,6 +20,7 @@ src/
 views/               EJS layout, partials, pages and admin views
 migrations/          Numbered SQL files
 brand/               Placeholder brand sources (SVG)
+deploy/              Optional example configuration for specific hosts
 scripts/             Asset build and icon generation
 tests/               Vitest suites; tests/browser holds the Chromium checks
 docs/                This documentation
@@ -29,7 +30,7 @@ Dependencies point one way: routes call services, services call db, views receiv
 
 ## Main decisions
 
-- **Migrations at startup.** The owner works from a phone and cannot run SQL. A runner applies numbered files, each in its own transaction, and records them in `schema_migrations` with a checksum. An advisory lock makes concurrent starts safe. Editing an applied file stops startup with a clear message, because migrations must only move forward.
+- **Migrations at startup.** Operators should not have to run SQL by hand, and the app should work on any host. A runner applies numbered files, each in its own transaction, and records them in `schema_migrations` with a checksum. An advisory lock makes concurrent starts safe. Editing an applied file stops startup with a clear message, because migrations must only move forward.
 - **Security does not depend on the host.** The content security policy, headers, rate limiting and error handling are all set by the app. Platform settings are an extra layer.
 - **No inline scripts or styles.** The content security policy has no `unsafe-inline`. Theme selection runs from an external script in the head, before first paint.
 - **Hashed static files.** `scripts/build-assets.mjs` writes content-hashed files and a manifest, so static files can be cached for a year while HTML stays on a 60 second cache.
@@ -37,6 +38,7 @@ Dependencies point one way: routes call services, services call db, views receiv
 - **Two CSS bundles, one token file.** `tailwind.theme.cjs` defines the palette once and generates the CSS variables for both themes. Colours are RGB triplets so opacity utilities work.
 - **Rate limit storage behind an interface.** `RateLimitStore` can be replaced by a shared store later without touching the middleware. The in-memory store is bounded by a key cap and scheduled pruning.
 - **The admin path is an extra layer only.** It is hidden from robots.txt, logs and search engines, but nothing relies on its secrecy for protection.
+- **Host-neutral.** Nothing in the application or the Dockerfile depends on a particular hosting platform. Host-specific files live in `deploy/` and are optional.
 
 ## Dependencies
 

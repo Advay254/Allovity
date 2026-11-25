@@ -10,7 +10,7 @@ Current version: 1.0.0 (foundation). See `docs/VERSIONS.md`.
 
 | Need                                   | File                                     |
 | -------------------------------------- | ---------------------------------------- |
-| Deploy to Render from a phone          | `docs/DEPLOYMENT.md`                     |
+| Deploy on any host                     | `docs/DEPLOYMENT.md`                     |
 | Every environment variable             | `docs/ENVIRONMENT.md` and `.env.example` |
 | How the code is organised and why      | `docs/ARCHITECTURE.md`                   |
 | Replace the placeholder logo and icons | `brand/README.md`                        |
@@ -22,7 +22,7 @@ Node 22, TypeScript (strict), Express 4, EJS views, Tailwind CSS 3.4, vanilla Ja
 
 ## Commands
 
-These are for anyone with a terminal. The deployment guide needs none of them.
+These are for anyone with a terminal. Hosts that build from the Dockerfile run them for you.
 
 | Command                                                     | What it does                                                                  |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
