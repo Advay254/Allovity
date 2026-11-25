@@ -68,8 +68,8 @@ const siteUrlSchema = z.string().refine((value) => {
 const slugSchema = z
   .string()
   .regex(
-    /^[A-Za-z0-9_-]{16,}$/,
-    'must be at least 16 characters using only letters, digits, underscore and hyphen',
+    /^[A-Za-z0-9_-]{4,20}$/,
+    'must be 4 to 20 characters using only letters, digits, underscore and hyphen',
   )
   .refine((value) => !PLACEHOLDER_SLUG.test(value), 'still looks like the example placeholder');
 
@@ -231,8 +231,10 @@ export function loadConfig(env: Env = process.env): LoadedConfig {
   if (isProduction && databaseSsl === 'disable') {
     warnings.push('DATABASE_SSL is disable in production. Database traffic will not be encrypted.');
   }
-  if (new Set(adminPathSlug).size < 8) {
-    warnings.push('ADMIN_PATH_SLUG has very few distinct characters. Use a long random value.');
+  if (adminPathSlug.length < 12) {
+    warnings.push(
+      'ADMIN_PATH_SLUG is short and easier to guess. 12 to 20 random characters is recommended.',
+    );
   }
   if (rateMax > 10_000 || rateWindowSeconds < 5) {
     warnings.push('RATE_LIMIT_MAX or RATE_LIMIT_WINDOW_SECONDS makes the rate limiter very loose.');

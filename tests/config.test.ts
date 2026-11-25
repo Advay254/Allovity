@@ -40,17 +40,28 @@ describe('configuration validation', () => {
     expect(failure({}).issues).toHaveLength(3);
   });
 
-  it('rejects a slug shorter than 16 characters or with unsafe characters', () => {
-    expect(failure({ ...valid, ADMIN_PATH_SLUG: 'short' }).message).toContain('ADMIN_PATH_SLUG');
-    expect(failure({ ...valid, ADMIN_PATH_SLUG: 'has spaces and/slashes!!' }).message).toContain(
+  it('accepts slugs from 4 to 20 characters and rejects anything outside that range', () => {
+    for (const slug of ['abcd', 'k3x9Qm7vT2pLw8Zr4NbY', 'a_b-c']) {
+      expect(loadConfig({ ...valid, ADMIN_PATH_SLUG: slug }).config.adminPathSlug).toBe(slug);
+    }
+    expect(failure({ ...valid, ADMIN_PATH_SLUG: 'abc' }).message).toContain('4 to 20');
+    expect(failure({ ...valid, ADMIN_PATH_SLUG: 'a'.repeat(21) }).message).toContain('4 to 20');
+    expect(failure({ ...valid, ADMIN_PATH_SLUG: 'has spaces/slash!' }).message).toContain(
       'ADMIN_PATH_SLUG',
     );
   });
 
+  it('warns, without failing, when the slug is short', () => {
+    const short = loadConfig({ ...valid, ADMIN_PATH_SLUG: 'abcd' });
+    expect(short.warnings.some((w) => w.startsWith('ADMIN_PATH_SLUG'))).toBe(true);
+    const long = loadConfig({ ...valid, ADMIN_PATH_SLUG: 'k3x9Qm7vT2pL' });
+    expect(long.warnings).toEqual([]);
+  });
+
   it('rejects the example placeholder slug', () => {
-    expect(
-      failure({ ...valid, ADMIN_PATH_SLUG: 'replace-with-a-long-random-value' }).message,
-    ).toContain('placeholder');
+    expect(failure({ ...valid, ADMIN_PATH_SLUG: 'replace-with-me' }).message).toContain(
+      'placeholder',
+    );
   });
 
   it('rejects a site address that is not absolute http(s)', () => {
@@ -66,7 +77,7 @@ describe('configuration validation', () => {
     const bad = {
       DATABASE_URL: 'mysql://user:s3cretPassw0rd@db.example.com/app',
       PUBLIC_SITE_URL: 'nope',
-      ADMIN_PATH_SLUG: 'tiny-SECRETVALUE',
+      ADMIN_PATH_SLUG: 'SECRETVALUE-too-long-for-the-limit',
     };
     const message = failure(bad).message;
     expect(message).not.toContain('s3cretPassw0rd');
