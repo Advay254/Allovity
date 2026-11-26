@@ -27,6 +27,22 @@
     @apply grid flex-1 place-items-center px-4 py-12 xs:px-6;
   }
 
+  .admin-panel--wide {
+    @apply max-w-[34rem];
+  }
+
+  .skip-link {
+    @apply absolute left-4 top-0 z-[60] -translate-y-[200%] rounded-md bg-primary px-4 py-3 text-small font-semibold text-primary-fg;
+  }
+
+  .skip-link:focus-visible {
+    @apply translate-y-4;
+  }
+
+  .eyebrow {
+    @apply text-caption font-semibold uppercase tracking-[0.16em] text-link;
+  }
+
   .admin-panel {
     @apply w-full max-w-[28rem] rounded-lg border border-line bg-surface p-6 shadow-elev-1 xs:p-8;
   }
@@ -62,5 +78,260 @@
 
   .admin-foot {
     @apply border-t border-line px-4 py-4 text-caption text-muted xs:px-6;
+  }
+
+  /* Signed-in shell: top bar, left column on md and up, drawer below md. */
+  .admin-frame {
+    @apply flex min-h-screen flex-col bg-bg;
+  }
+
+  .admin-bar__start,
+  .admin-bar__end {
+    @apply flex items-center gap-3 whitespace-nowrap;
+  }
+
+  .menu-button {
+    @apply btn btn-secondary h-11 w-11 min-h-0 px-0 md:hidden;
+  }
+
+  .admin-identity {
+    @apply hidden flex-col text-right leading-tight xs:flex;
+  }
+
+  .admin-identity__name {
+    @apply text-small font-medium text-fg;
+  }
+
+  .admin-identity__role {
+    @apply font-mono text-caption uppercase tracking-[0.12em] text-muted;
+  }
+
+  .admin-body {
+    @apply flex flex-1;
+  }
+
+  .admin-side {
+    @apply hidden w-60 shrink-0 border-r border-line p-4 md:block;
+  }
+
+  .admin-nav {
+    @apply flex flex-col gap-1;
+  }
+
+  .admin-nav__link {
+    @apply flex min-h-[44px] items-center gap-3 rounded-md px-3 text-small font-medium text-muted transition-colors duration-fast ease-out hover:text-fg;
+  }
+
+  .admin-nav__link[aria-current='page'] {
+    @apply bg-surface text-fg shadow-elev-1;
+  }
+
+  .admin-content {
+    @apply min-w-0 flex-1 px-4 py-8 xs:px-6 md:px-10 md:py-10;
+  }
+
+  .admin-head {
+    @apply flex flex-wrap items-center justify-between gap-4;
+  }
+
+  .admin-card {
+    @apply w-full max-w-[44rem] rounded-lg border border-line bg-surface p-6 shadow-elev-1 xs:p-8;
+  }
+
+  .admin-card--narrow {
+    @apply max-w-[28rem];
+  }
+
+  /* Drawer: same behaviour and look as the public drawer. */
+  .admin-drawer {
+    @apply invisible fixed inset-0 z-50 md:hidden;
+    transition: visibility 0s linear 250ms;
+  }
+
+  .admin-drawer[data-open='true'] {
+    @apply visible;
+    transition-delay: 0s;
+  }
+
+  .admin-drawer__scrim {
+    @apply absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-normal ease-out;
+  }
+
+  .admin-drawer[data-open='true'] .admin-drawer__scrim {
+    @apply opacity-100;
+  }
+
+  .admin-drawer__panel {
+    @apply absolute right-0 top-0 flex h-full w-[min(22rem,88vw)] translate-x-full flex-col gap-8 overflow-y-auto border-l border-line bg-surface p-6 shadow-elev-2 transition-transform duration-normal ease-out;
+  }
+
+  .admin-drawer[data-open='true'] .admin-drawer__panel {
+    @apply translate-x-0;
+  }
+
+  .admin-drawer__head {
+    @apply flex items-center justify-between;
+  }
+
+  .admin-drawer__nav {
+    @apply flex flex-col;
+  }
+
+  .admin-drawer__link {
+    @apply flex min-h-[56px] items-center gap-3 border-t border-line font-display text-h3 font-semibold text-fg;
+  }
+
+  .admin-drawer__nav li:last-child .admin-drawer__link {
+    @apply border-b;
+  }
+
+  /* Forms */
+  .form {
+    @apply flex flex-col gap-5;
+  }
+
+  .field {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .field__label {
+    @apply text-small font-medium text-fg;
+  }
+
+  .field__hint {
+    @apply text-caption text-muted;
+  }
+
+  .field__input {
+    @apply min-h-[44px] w-full rounded-md border border-line-strong bg-surface px-3 font-sans text-body text-fg;
+  }
+
+  .field__input[aria-invalid='true'] {
+    @apply border-danger;
+  }
+
+  .field__error {
+    @apply flex items-start gap-1.5 text-caption font-medium text-danger;
+  }
+
+  .field__error svg {
+    @apply mt-0.5 shrink-0;
+  }
+
+  .link {
+    @apply font-medium text-link underline underline-offset-4;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-primary-fg shadow-elev-1;
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    @apply opacity-90;
+  }
+
+  /* Alerts */
+  .alert {
+    @apply flex items-start gap-3 rounded-md border p-4 text-small;
+  }
+
+  .alert svg {
+    @apply mt-0.5 shrink-0;
+  }
+
+  .alert__title {
+    @apply font-semibold;
+  }
+
+  .alert-danger {
+    @apply border-danger/50 bg-danger/10 text-danger;
+  }
+
+  .alert-success {
+    @apply border-success/50 bg-success/10 text-success;
+  }
+
+  .alert-warning {
+    @apply border-warning/50 bg-warning/10 text-warning;
+  }
+
+  .alert-info {
+    @apply border-line-strong bg-surface text-fg;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-sm border border-line-strong px-2 py-0.5 font-mono text-caption text-muted;
+  }
+
+  /* Tables: stacked cards below md so nothing scrolls sideways on a phone. */
+  .table-wrap {
+    @apply w-full;
+  }
+
+  .admin-table {
+    @apply w-full border-collapse text-small;
+  }
+
+  .admin-table th {
+    @apply hidden border-b border-line px-3 py-2 text-left font-mono text-caption font-medium uppercase tracking-[0.08em] text-muted md:table-cell;
+  }
+
+  .admin-table td {
+    @apply block border-b border-line px-1 py-2 md:table-cell md:px-3 md:py-3;
+  }
+
+  .admin-table tr {
+    @apply block border-b border-line py-3 md:table-row md:py-0;
+  }
+
+  .admin-table td[data-label]::before {
+    content: attr(data-label);
+    @apply mb-0.5 block font-mono text-caption uppercase tracking-[0.08em] text-muted md:hidden;
+  }
+
+  .admin-table td {
+    @apply break-words;
+  }
+
+  .row-actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .filters {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-end;
+  }
+
+  .pager {
+    @apply flex items-center justify-between gap-4;
+  }
+
+  /* Two-step enrolment */
+  .steps {
+    @apply list-decimal space-y-1 pl-5 text-small text-muted;
+  }
+
+  .qr {
+    @apply mx-auto mt-6 w-48 max-w-full rounded-md border border-line bg-white p-2;
+  }
+
+  .qr svg {
+    @apply block h-auto w-full;
+  }
+
+  .manual-key code,
+  .code-grid code {
+    @apply font-mono text-small text-fg;
+  }
+
+  .manual-key {
+    @apply mt-1 break-all;
+  }
+
+  .code-grid {
+    @apply mt-6 grid grid-cols-2 gap-3 rounded-md border border-line p-4;
+  }
+
+  html.is-locked {
+    overflow: hidden;
   }
 }

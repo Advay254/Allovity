@@ -1,7 +1,7 @@
 import type { LogLevel } from '../config/env.js';
 
 const LEVELS: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 };
-const SECRET_KEY =
+export const SECRET_KEY_PATTERN =
   /pass(word)?|secret|token|authorization|cookie|api[-_]?key|connection|database[-_]?url|credential/i;
 const URL_CREDENTIALS = /\b([a-z][a-z0-9+.-]*:\/\/)[^\s/@:]+(:[^\s/@]*)?@/gi;
 
@@ -37,7 +37,7 @@ function sanitize(value: unknown, depth = 0): unknown {
   if (Array.isArray(value)) return value.map((item) => sanitize(item, depth + 1));
   const output: LogFields = {};
   for (const [key, inner] of Object.entries(value)) {
-    output[key] = SECRET_KEY.test(key) ? '[redacted]' : sanitize(inner, depth + 1);
+    output[key] = SECRET_KEY_PATTERN.test(key) ? '[redacted]' : sanitize(inner, depth + 1);
   }
   return output;
 }

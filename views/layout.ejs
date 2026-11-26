@@ -12,8 +12,8 @@
   <meta name="description" content="<%= description %>">
   <% if (canonical) { %><link rel="canonical" href="<%= canonical %>"><% } %>
   <% if (meta.noindex) { %><meta name="robots" content="noindex, nofollow"><% } %>
-  <meta name="theme-color" content="<%= site.themeColor.dark %>" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="<%= site.themeColor.light %>" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="<%= site.themeColor %>">
+  <meta name="color-scheme" content="only light">
   <link rel="icon" href="/favicon.ico" sizes="48x48">
   <link rel="icon" href="<%= asset('brand.symbol.svg') %>" type="image/svg+xml">
   <link rel="icon" href="<%= asset('brand.favicon-32.png') %>" type="image/png" sizes="32x32">
@@ -35,7 +35,7 @@
   <link rel="preload" href="<%= asset('font.space-grotesk') %>" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="<%= asset('font.inter') %>" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="<%= asset('public.css') %>">
-  <script src="<%= asset('theme-init.js') %>"></script>
+  <script src="<%= asset('page-init.js') %>"></script>
 </head>
 <body data-page="<%= meta.pageId %>">
   <a class="skip-link" href="#main" data-drawer-background>Skip to main content</a>

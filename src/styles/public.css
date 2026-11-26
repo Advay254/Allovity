@@ -72,27 +72,6 @@
     @apply btn btn-secondary h-11 w-11 min-h-0 px-0 md:hidden;
   }
 
-  /* Theme control: parent radius md (10), child radius sm (6). */
-  .theme-control {
-    @apply inline-flex items-center gap-0.5 rounded-md border border-line-strong p-0.5;
-  }
-
-  .theme-control__option {
-    @apply grid h-9 w-9 cursor-pointer place-items-center rounded-sm text-muted transition-colors duration-fast ease-out hover:text-fg;
-  }
-
-  .theme-control__option[aria-pressed='true'] {
-    @apply bg-raised text-fg shadow-elev-1;
-  }
-
-  .theme-control__option svg {
-    @apply h-[18px] w-[18px];
-  }
-
-  .theme-control-desktop {
-    @apply hidden md:inline-flex;
-  }
-
   /* Mobile drawer */
   .drawer {
     @apply invisible fixed inset-0 z-50 md:hidden;
