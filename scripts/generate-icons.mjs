@@ -8,9 +8,6 @@ import { dirname, join } from 'node:path';
 const ICONS = [
   'menu',
   'x',
-  'sun',
-  'moon',
-  'monitor',
   'arrow-right',
   'arrow-down',
   'messages-square',
@@ -20,6 +17,17 @@ const ICONS = [
   'lock',
   'house',
   'rotate-cw',
+  'user',
+  'users',
+  'scroll-text',
+  'shield-check',
+  'key-round',
+  'log-out',
+  'monitor-smartphone',
+  'circle-alert',
+  'circle-check',
+  'triangle-alert',
+  'info',
 ];
 
 const require = createRequire(import.meta.url);

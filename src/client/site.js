@@ -1,80 +1,8 @@
-// Shared behaviour for every public page: theme control and the mobile drawer.
+// Shared behaviour for every public page: the mobile drawer.
 (function () {
   'use strict';
 
   var root = document.documentElement;
-  var STORAGE_KEY = 'allovity-theme';
-
-  /* Theme ------------------------------------------------------------- */
-  function currentBackgroundHex() {
-    var raw = window.getComputedStyle(root).getPropertyValue('--c-bg').trim().split(/\s+/);
-    if (raw.length !== 3) return null;
-    return (
-      '#' +
-      raw
-        .map(function (part) {
-          return ('0' + parseInt(part, 10).toString(16)).slice(-2);
-        })
-        .join('')
-    );
-  }
-
-  function syncThemeColor(pref) {
-    var metas = document.querySelectorAll('meta[name="theme-color"]');
-    var hex = pref === 'system' ? null : currentBackgroundHex();
-    Array.prototype.forEach.call(metas, function (meta) {
-      if (!meta.hasAttribute('data-original-content')) {
-        meta.setAttribute('data-original-content', meta.getAttribute('content') || '');
-        meta.setAttribute('data-original-media', meta.getAttribute('media') || '');
-      }
-      if (hex) {
-        meta.setAttribute('content', hex);
-        meta.removeAttribute('media');
-      } else {
-        meta.setAttribute('content', meta.getAttribute('data-original-content'));
-        var media = meta.getAttribute('data-original-media');
-        if (media) meta.setAttribute('media', media);
-      }
-    });
-  }
-
-  function reflectPreference(pref) {
-    Array.prototype.forEach.call(document.querySelectorAll('[data-theme-set]'), function (button) {
-      button.setAttribute('aria-pressed', String(button.getAttribute('data-theme-set') === pref));
-    });
-  }
-
-  function applyPreference(pref, persist) {
-    root.setAttribute('data-theme-pref', pref);
-    if (pref === 'system') {
-      root.removeAttribute('data-theme');
-    } else {
-      root.setAttribute('data-theme', pref);
-    }
-    if (persist) {
-      try {
-        if (pref === 'system') {
-          window.localStorage.removeItem(STORAGE_KEY);
-        } else {
-          window.localStorage.setItem(STORAGE_KEY, pref);
-        }
-      } catch (error) {
-        // Ignore blocked storage. The choice still applies for this visit.
-      }
-    }
-    reflectPreference(pref);
-    syncThemeColor(pref);
-  }
-
-  Array.prototype.forEach.call(document.querySelectorAll('[data-theme-set]'), function (button) {
-    button.addEventListener('click', function () {
-      applyPreference(button.getAttribute('data-theme-set'), true);
-    });
-  });
-
-  var initialPref = root.getAttribute('data-theme-pref') || 'system';
-  reflectPreference(initialPref);
-  syncThemeColor(initialPref);
 
   /* Mobile drawer ------------------------------------------------------- */
   var drawer = document.getElementById('site-drawer');

@@ -1,79 +1,50 @@
 // Single source of truth for design tokens. Both Tailwind configs (public and
 // admin) import this file, and the CSS custom properties are generated from
-// it, so a colour is defined exactly once. Colours are exposed as RGB triplets
+// it, so a colour is defined exactly once. The site is light only. Colours are exposed as RGB triplets
 // so opacity utilities such as bg-primary/20 work.
 const plugin = require('tailwindcss/plugin');
 
 const palette = {
-  dark: {
-    bg: '#080D19',
-    surface: '#151F32',
-    raised: '#1B2842',
-    fg: '#FFFFFF',
-    muted: '#8BA3C8',
-    primary: '#246BFE',
-    'primary-hover': '#1B55D4',
-    'primary-fg': '#FFFFFF',
-    link: '#6A9CFF',
-    line: '#24324D',
-    'line-strong': '#5F7399',
-    success: '#16C79A',
-    warning: '#F4B740',
-    danger: '#F05B69',
-  },
-  light: {
-    bg: '#F7F9FC',
-    surface: '#FFFFFF',
-    raised: '#FFFFFF',
-    fg: '#0B1220',
-    muted: '#4A5B78',
-    primary: '#246BFE',
-    'primary-hover': '#1B55D4',
-    'primary-fg': '#FFFFFF',
-    link: '#1B55D4',
-    line: '#D9E0EC',
-    'line-strong': '#7A8BA8',
-    success: '#0B7A5F',
-    warning: '#8A5700',
-    danger: '#C0293A',
-  },
+  bg: '#F7F9FC',
+  surface: '#FFFFFF',
+  raised: '#FFFFFF',
+  fg: '#0B1220',
+  muted: '#4A5B78',
+  primary: '#246BFE',
+  'primary-hover': '#1B55D4',
+  'primary-fg': '#FFFFFF',
+  link: '#1B55D4',
+  line: '#D9E0EC',
+  'line-strong': '#7A8BA8',
+  success: '#0B7A5F',
+  warning: '#8A5700',
+  danger: '#C0293A',
 };
 
-// Extra per-theme values that are not colours in the palette sense.
-const effects = {
-  dark: { glow: '0.22', shadow: '0 0 0' },
-  light: { glow: '0.12', shadow: '11 18 32' },
-};
+// Effect values that are not colours in the palette sense.
+const effects = { glow: '0.12', shadow: '11 18 32' };
 
 function rgbTriplet(hex) {
   const n = parseInt(hex.slice(1), 16);
   return `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`;
 }
 
-function variables(theme) {
+function variables() {
   const vars = {};
-  for (const [name, hex] of Object.entries(palette[theme])) {
+  for (const [name, hex] of Object.entries(palette)) {
     vars[`--c-${name}`] = rgbTriplet(hex);
   }
-  vars['--glow-alpha'] = effects[theme].glow;
-  vars['--shadow-rgb'] = effects[theme].shadow;
-  vars['color-scheme'] = theme;
+  vars['--glow-alpha'] = effects.glow;
+  vars['--shadow-rgb'] = effects.shadow;
   return vars;
 }
 
 const paletteVariables = plugin(({ addBase }) => {
-  addBase({
-    ':root': variables('dark'),
-    '@media (prefers-color-scheme: light)': {
-      ':root:not([data-theme])': variables('light'),
-    },
-    ':root[data-theme="light"]': variables('light'),
-    ':root[data-theme="dark"]': variables('dark'),
-  });
+  addBase({ ':root': variables() });
 });
 
 const colors = Object.fromEntries(
-  Object.keys(palette.dark).map((name) => [name, `rgb(var(--c-${name}) / <alpha-value>)`]),
+  Object.keys(palette).map((name) => [name, `rgb(var(--c-${name}) / <alpha-value>)`]),
 );
 
 const fallbackSans = [
