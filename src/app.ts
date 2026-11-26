@@ -11,7 +11,9 @@ import { securityHeaders } from './http/security.js';
 import { loadAssetResolver, type AssetResolver } from './lib/assets.js';
 import type { Logger } from './lib/logger.js';
 import { ROOT_FILES_DIR, STATIC_DIR, VIEWS_DIR } from './lib/paths.js';
-import { adminRouter } from './routes/admin.js';
+import { adminRouter } from './routes/admin/index.js';
+import { createAdminServices, type AdminServices } from './admin/services.js';
+import { PostgresRateLimitStore } from './security/pg-rate-limit-store.js';
 import { livenessRouter, readinessRouter } from './routes/health.js';
 import { publicRouter } from './routes/public.js';
 import { seoRouter } from './routes/seo.js';
@@ -26,6 +28,10 @@ export interface AppDependencies {
   healthService?: HealthService;
   /** Swap the rate limit storage without touching the limiter. */
   rateLimitStore?: RateLimitStore;
+  /** Shared store for admin security limits. Defaults to a Postgres store on the pool. */
+  adminRateLimitStore?: RateLimitStore;
+  /** Pass the services built at startup so bootstrap and the app share them. Null means admin is not configured. */
+  adminServices?: AdminServices | null;
   assets?: AssetResolver;
 }
 
@@ -90,7 +96,20 @@ export function createApp(deps: AppDependencies): Express {
   app.use(readinessRouter(health));
   app.use(seoRouter(config));
   app.use(publicRouter());
-  app.use(`/${config.adminPathSlug}`, adminRouter());
+  const adminServices =
+    deps.adminServices !== undefined
+      ? deps.adminServices
+      : createAdminServices({
+          config,
+          logger,
+          pool,
+          store:
+            deps.adminRateLimitStore ??
+            new PostgresRateLimitStore(pool, { maxRows: 50_000 }, (error) =>
+              logger.error('Admin rate limit store error', { err: error }),
+            ),
+        });
+  app.use(`/${config.adminPathSlug}`, adminRouter(adminServices, config));
 
   app.use(notFoundHandler);
   app.use(errorHandler(logger));

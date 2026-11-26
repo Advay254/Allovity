@@ -7,6 +7,10 @@ import { runMigrations } from './db/migrate.js';
 import { createLogger, type Logger } from './lib/logger.js';
 import { MIGRATIONS_DIR } from './lib/paths.js';
 import { MemoryRateLimitStore } from './security/rate-limit-store.js';
+import { PostgresRateLimitStore } from './security/pg-rate-limit-store.js';
+import { createAdminServices } from './admin/services.js';
+import { bootstrapAdmin } from './admin/bootstrap.js';
+import { pruneSessions } from './admin/sessions.js';
 
 const CONNECT_ATTEMPTS = 5;
 
@@ -60,7 +64,31 @@ async function main(): Promise<void> {
     logger.info('RUN_MIGRATIONS is off, skipping migrations');
   }
 
-  const app = createApp({ config, logger, pool, rateLimitStore: store });
+  const adminStore = new PostgresRateLimitStore(pool, { maxRows: 50_000 }, (error) =>
+    logger.error('Admin rate limit store error', { err: error }),
+  );
+  const adminServices = createAdminServices({ config, logger, pool, store: adminStore });
+  let sessionTimer: NodeJS.Timeout | undefined;
+  if (!adminServices) {
+    // Loud, but not fatal: the public site keeps working and admin answers 503.
+    logger.error(
+      `${config.admin.secretKeyProblem ?? 'ADMIN_SECRET_KEY is unusable'}. The admin area is disabled until it is fixed. The public site is not affected.`,
+    );
+  } else {
+    try {
+      await bootstrapAdmin(adminServices);
+    } catch (error) {
+      logger.error('Admin bootstrap failed', { err: error });
+    }
+    sessionTimer = setInterval(() => {
+      pruneSessions(pool).catch((error: unknown) =>
+        logger.error('Session pruning failed', { err: error }),
+      );
+    }, 3_600_000);
+    sessionTimer.unref();
+  }
+
+  const app = createApp({ config, logger, pool, rateLimitStore: store, adminServices });
   const server: Server = app.listen(config.port, () => {
     logger.info('Server listening', { port: config.port, env: config.nodeEnv });
   });
@@ -81,6 +109,8 @@ async function main(): Promise<void> {
 
     server.close(() => {
       store.close();
+      adminStore.close();
+      if (sessionTimer) clearInterval(sessionTimer);
       pool
         .end()
         .catch((error: unknown) => logger.error('Pool close failed', { err: error }))

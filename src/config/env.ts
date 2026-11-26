@@ -20,6 +20,23 @@ export interface AppConfig {
   dbStatementTimeoutMs: number;
   rateLimit: { max: number; windowMs: number; maxKeys: number };
   shutdownTimeoutMs: number;
+  admin: AdminConfig;
+}
+
+export interface AdminConfig {
+  /** Validated secret that all admin keys are derived from. Null when missing or malformed. */
+  secretKey: string | null;
+  /** Why the secret is unusable. Names the variable, never contains its value. */
+  secretKeyProblem: string | null;
+  initialEmail: string | null;
+  initialPassword: string | null;
+  requireTwoFactor: boolean;
+  loginMaxFailures: number;
+  loginWindowMs: number;
+  sessionIdleMs: number;
+  sessionAbsoluteMs: number;
+  argon2: { memoryCost: number; timeCost: number; parallelism: number };
+  emergencyReset: boolean;
 }
 
 export interface LoadedConfig {
@@ -72,6 +89,11 @@ const slugSchema = z
     'must be 4 to 20 characters using only letters, digits, underscore and hyphen',
   )
   .refine((value) => !PLACEHOLDER_SLUG.test(value), 'still looks like the example placeholder');
+
+const emailSchema = z
+  .string()
+  .max(254)
+  .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'must be an email address');
 
 const booleanSchema = z
   .enum(['true', 'false', '1', '0', 'yes', 'no'])
@@ -220,6 +242,8 @@ export function loadConfig(env: Env = process.env): LoadedConfig {
     warnings,
   );
 
+  const admin = loadAdminConfig(env, isProduction, warnings);
+
   if (isProduction && trustedProxyHops === 0) {
     warnings.push(
       'TRUSTED_PROXY_HOPS is 0 in production. If a proxy or load balancer sits in front of the app, every visitor will share one IP address for rate limiting. Set it to the number of proxies.',
@@ -257,7 +281,130 @@ export function loadConfig(env: Env = process.env): LoadedConfig {
       dbStatementTimeoutMs,
       rateLimit: { max: rateMax, windowMs: rateWindowSeconds * 1000, maxKeys: rateMaxKeys },
       shutdownTimeoutMs,
+      admin,
     },
     warnings,
+  };
+}
+
+/** A usable secret is 43 to 256 characters of base64 or base64url with some variety. */
+export function checkAdminSecretKey(raw: string | undefined): string | null {
+  const value = raw?.trim() ?? '';
+  if (value === '') return 'ADMIN_SECRET_KEY is not set';
+  if (!/^[A-Za-z0-9+/_=-]{43,256}$/.test(value)) {
+    return 'ADMIN_SECRET_KEY is malformed (use 43 to 256 letters, digits, - _ + / or =)';
+  }
+  if (new Set(value).size < 12) return 'ADMIN_SECRET_KEY is not random enough';
+  return null;
+}
+
+function loadAdminConfig(env: Env, isProduction: boolean, warnings: string[]): AdminConfig {
+  const secretKeyProblem = checkAdminSecretKey(env.ADMIN_SECRET_KEY);
+  const secretKey = secretKeyProblem ? null : (env.ADMIN_SECRET_KEY as string).trim();
+
+  const initialEmailRaw = env.ADMIN_INITIAL_EMAIL?.trim().toLowerCase();
+  let initialEmail: string | null = null;
+  if (initialEmailRaw) {
+    if (emailSchema.safeParse(initialEmailRaw).success) initialEmail = initialEmailRaw;
+    else warnings.push('ADMIN_INITIAL_EMAIL: must be an email address. Ignoring it.');
+  }
+  const initialPassword = env.ADMIN_INITIAL_PASSWORD ? env.ADMIN_INITIAL_PASSWORD : null;
+
+  const requireTwoFactor = readOptional(
+    env,
+    'ADMIN_REQUIRE_2FA',
+    booleanSchema,
+    isProduction,
+    'must be true or false',
+    warnings,
+  );
+  const loginMaxFailures = readOptional(
+    env,
+    'ADMIN_LOGIN_MAX_FAILURES',
+    int(3, 50),
+    5,
+    'must be 3 to 50',
+    warnings,
+  );
+  const loginWindowMinutes = readOptional(
+    env,
+    'ADMIN_LOGIN_WINDOW_MINUTES',
+    int(1, 240),
+    15,
+    'must be 1 to 240',
+    warnings,
+  );
+  const idleMinutes = readOptional(
+    env,
+    'ADMIN_SESSION_IDLE_MINUTES',
+    int(5, 1440),
+    30,
+    'must be 5 to 1440',
+    warnings,
+  );
+  const absoluteHours = readOptional(
+    env,
+    'ADMIN_SESSION_ABSOLUTE_HOURS',
+    int(1, 168),
+    12,
+    'must be 1 to 168',
+    warnings,
+  );
+  const memoryCost = readOptional(
+    env,
+    'ARGON2_MEMORY_KIB',
+    int(19_456, 1_048_576),
+    19_456,
+    'must be at least 19456 (the OWASP minimum)',
+    warnings,
+  );
+  const timeCost = readOptional(
+    env,
+    'ARGON2_TIME_COST',
+    int(2, 20),
+    2,
+    'must be at least 2 (the OWASP minimum at 19 MiB)',
+    warnings,
+  );
+  const parallelism = readOptional(
+    env,
+    'ARGON2_PARALLELISM',
+    int(1, 16),
+    1,
+    'must be 1 to 16',
+    warnings,
+  );
+  const emergencyReset = readOptional(
+    env,
+    'ADMIN_EMERGENCY_RESET',
+    booleanSchema,
+    false,
+    'must be true or false',
+    warnings,
+  );
+
+  if (isProduction && !requireTwoFactor) {
+    warnings.push(
+      'ADMIN_REQUIRE_2FA is false in production. Two-step verification should be mandatory for admin users.',
+    );
+  }
+  if (emergencyReset) {
+    warnings.push(
+      'ADMIN_EMERGENCY_RESET is true. The owner password will be replaced on this boot. Turn it off again afterwards.',
+    );
+  }
+
+  return {
+    secretKey,
+    secretKeyProblem,
+    initialEmail,
+    initialPassword,
+    requireTwoFactor,
+    loginMaxFailures,
+    loginWindowMs: loginWindowMinutes * 60_000,
+    sessionIdleMs: idleMinutes * 60_000,
+    sessionAbsoluteMs: absoluteHours * 3_600_000,
+    argon2: { memoryCost, timeCost, parallelism },
+    emergencyReset,
   };
 }
