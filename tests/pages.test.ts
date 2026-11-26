@@ -41,7 +41,11 @@ describe('home page', () => {
       new RegExp(`property="og:image" content="${SITE_URL}/static/og-image\\.[0-9a-f]{10}\\.png"`),
     );
     expect(html).toContain('name="twitter:card" content="summary_large_image"');
-    expect(html).toContain('name="theme-color"');
+    expect(html.match(/name="theme-color"/g)).toHaveLength(1);
+    expect(html).toContain('name="theme-color" content="#F7F9FC"');
+    expect(html).toContain('name="color-scheme" content="only light"');
+    expect(html).toContain('page-init.');
+    expect(html).not.toContain('theme-init');
     expect(html).toContain('rel="apple-touch-icon"');
     expect(html).not.toContain('noindex');
   });

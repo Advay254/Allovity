@@ -126,3 +126,37 @@ describe('configuration validation', () => {
     expect(loadConfig({ ...valid, RUN_MIGRATIONS: 'false' }).config.runMigrations).toBe(false);
   });
 });
+
+describe('admin settings', () => {
+  const base = {
+    DATABASE_URL: 'postgres://u:p@localhost:5432/d',
+    PUBLIC_SITE_URL: 'https://example.com',
+    ADMIN_PATH_SLUG: 'k3x9Qm7vT2pLw8Zr4NbY',
+  };
+  it('uses safe defaults and falls back with a warning instead of crashing', () => {
+    const { config, warnings } = loadConfig({
+      ...base,
+      NODE_ENV: 'production',
+      ADMIN_LOGIN_MAX_FAILURES: 'lots',
+      ARGON2_MEMORY_KIB: '100',
+    });
+    expect(config.admin.loginMaxFailures).toBe(5);
+    expect(config.admin.loginWindowMs).toBe(15 * 60_000);
+    expect(config.admin.sessionIdleMs).toBe(30 * 60_000);
+    expect(config.admin.sessionAbsoluteMs).toBe(12 * 3_600_000);
+    expect(config.admin.argon2).toEqual({ memoryCost: 19456, timeCost: 2, parallelism: 1 });
+    expect(config.admin.requireTwoFactor).toBe(true);
+    expect(config.admin.emergencyReset).toBe(false);
+    expect(warnings.join('\n')).toContain('ADMIN_LOGIN_MAX_FAILURES');
+    expect(warnings.join('\n')).toContain('ARGON2_MEMORY_KIB');
+  });
+  it('makes two-step optional outside production and warns when it is off in production', () => {
+    expect(loadConfig({ ...base }).config.admin.requireTwoFactor).toBe(false);
+    const off = loadConfig({ ...base, NODE_ENV: 'production', ADMIN_REQUIRE_2FA: 'false' });
+    expect(off.warnings.join('\n')).toContain('ADMIN_REQUIRE_2FA');
+  });
+  it('warns loudly when the emergency setting is on', () => {
+    const { warnings } = loadConfig({ ...base, ADMIN_EMERGENCY_RESET: 'true' });
+    expect(warnings.join('\n')).toContain('ADMIN_EMERGENCY_RESET is true');
+  });
+});

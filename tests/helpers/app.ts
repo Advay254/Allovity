@@ -5,6 +5,7 @@ import { createLogger } from '../../src/lib/logger.js';
 
 export const SLUG = 'k3x9Qm7vT2pLw8Zr4NbY';
 export const SITE_URL = 'https://allovity.test';
+export const TEST_SECRET = 'Zk3vQ9mT2xLp7WnB4rYc8HdJ5sGf1AeUq6VoXtN0iKM';
 
 export function testConfig(
   overrides: Record<string, string> = {},
@@ -15,6 +16,8 @@ export function testConfig(
     PUBLIC_SITE_URL: SITE_URL,
     ADMIN_PATH_SLUG: SLUG,
     NODE_ENV: 'test',
+    ADMIN_SECRET_KEY: TEST_SECRET,
+    ARGON2_MEMORY_KIB: '19456',
     ...overrides,
   }).config;
 }

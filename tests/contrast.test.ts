@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 const require = createRequire(import.meta.url);
 const { palette } = require('../tailwind.theme.cjs') as {
-  palette: Record<'dark' | 'light', Record<string, string>>;
+  palette: Record<string, string>;
 };
 
 function channel(value: number): number {
@@ -45,12 +45,10 @@ const pairs: Array<[string, string, number, string]> = [
 ];
 
 describe('WCAG 2.2 AA contrast', () => {
-  for (const theme of ['dark', 'light'] as const) {
-    for (const [fg, bg, min, label] of pairs) {
-      it(`${theme}: ${label} is at least ${min}:1`, () => {
-        const value = ratio(palette[theme][fg] as string, palette[theme][bg] as string);
-        expect(value, `${fg} on ${bg} = ${value.toFixed(2)}`).toBeGreaterThanOrEqual(min);
-      });
-    }
+  for (const [fg, bg, min, label] of pairs) {
+    it(`${label} is at least ${min}:1`, () => {
+      const value = ratio(palette[fg] as string, palette[bg] as string);
+      expect(value, `${fg} on ${bg} = ${value.toFixed(2)}`).toBeGreaterThanOrEqual(min);
+    });
   }
 });

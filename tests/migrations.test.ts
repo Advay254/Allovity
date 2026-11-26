@@ -41,8 +41,16 @@ describe('migrations', () => {
     const pool = newPool(db.url);
     expect(await tables(pool)).toEqual([]);
     const result = await runMigrations(pool, { dir: MIGRATIONS_DIR, logger });
-    expect(result.applied).toEqual(['0001_foundation.sql']);
-    expect(await tables(pool)).toEqual(['audit_log', 'schema_migrations', 'site_settings']);
+    expect(result.applied).toEqual(['0001_foundation.sql', '0002_admin_auth.sql']);
+    expect(await tables(pool)).toEqual([
+      'admin_recovery_codes',
+      'admin_sessions',
+      'admin_users',
+      'audit_log',
+      'rate_limit_hits',
+      'schema_migrations',
+      'site_settings',
+    ]);
     const index = await pool.query(
       "SELECT 1 FROM pg_indexes WHERE indexname = 'audit_log_created_at_idx'",
     );
@@ -55,9 +63,9 @@ describe('migrations', () => {
     await runMigrations(pool, { dir: MIGRATIONS_DIR, logger });
     const again = await runMigrations(pool, { dir: MIGRATIONS_DIR, logger });
     expect(again.applied).toEqual([]);
-    expect(again.skipped).toEqual(['0001_foundation.sql']);
+    expect(again.skipped).toEqual(['0001_foundation.sql', '0002_admin_auth.sql']);
     const rows = await pool.query('SELECT count(*)::int AS n FROM schema_migrations');
-    expect(rows.rows[0].n).toBe(1);
+    expect(rows.rows[0].n).toBe(2);
   });
 
   it('keeps the audit log append-only and its metadata small', async () => {
@@ -99,10 +107,10 @@ describe('migrations', () => {
       ),
     );
     const appliedTotal = runs.reduce((sum, run) => sum + run.applied.length, 0);
-    expect(appliedTotal).toBe(1);
+    expect(appliedTotal).toBe(2);
     const check = newPool(db.url);
     const rows = await check.query('SELECT count(*)::int AS n FROM schema_migrations');
-    expect(rows.rows[0].n).toBe(1);
+    expect(rows.rows[0].n).toBe(2);
   });
 
   it('refuses to start when an applied migration was edited', async () => {
