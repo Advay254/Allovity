@@ -1,0 +1,18 @@
+<section class="admin-panel" aria-labelledby="page-title">
+  <div class="admin-icon"><%- icon('lock') %></div>
+  <h1 id="page-title" class="text-h3 font-semibold">Sign in</h1>
+  <p class="mt-2 text-small text-muted">Use your admin email and password.</p>
+  <% if (typeof throttled !== 'undefined') { %>
+    <div class="mt-6"><%- include('../partials/alert', { kind: 'warning', title: 'Please wait', message: throttled.message + ' This is a short pause, not a lock. Your account is not disabled, and the wait ends by itself.' }) %></div>
+  <% } else if (typeof failed !== 'undefined' && failed) { %>
+    <div class="mt-6"><%- include('../partials/alert', { kind: 'danger', message: 'The email or password is not correct.' }) %></div>
+  <% } %>
+  <form class="form mt-6" method="post" action="<%= adminBase %>/login" data-submit-once>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <%- include('../partials/field', { id: 'email', name: 'email', label: 'Email', type: 'email', value: form.values.email || '', autocomplete: 'username', inputmode: 'email', maxlength: 254, spellcheck: 'false', autofocus: true, error: '' }) %>
+    <%- include('../partials/field', { id: 'password', name: 'password', label: 'Password', type: 'password', autocomplete: 'current-password', maxlength: 1024, error: '' }) %>
+    <button type="submit" class="btn btn-primary w-full">Sign in</button>
+  </form>
+  <p class="mt-6 text-caption text-muted">Lost access? Wait a few minutes and try again, or follow the recovery steps in the deployment guide.</p>
+  <a class="btn btn-secondary btn-sm mt-4" href="/">Return to the site</a>
+</section>

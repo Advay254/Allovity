@@ -1,0 +1,23 @@
+<section class="admin-card admin-card--narrow" aria-labelledby="page-title">
+  <h1 id="page-title" class="text-h3 font-semibold">Create user</h1>
+  <p class="mt-2 text-small text-muted">They sign in with the temporary password and must choose their own at first sign-in. Share it through a safe channel.</p>
+  <% if (form.errors.form) { %><div class="mt-4"><%- include('../partials/alert', { kind: 'danger', message: form.errors.form }) %></div><% } %>
+  <form class="form mt-6" method="post" action="<%= adminBase %>/users" data-submit-once>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <%- include('../partials/field', { id: 'displayName', name: 'displayName', label: 'Name', value: form.values.displayName || '', autocomplete: 'off', maxlength: 80, error: form.errors.displayName }) %>
+    <%- include('../partials/field', { id: 'email', name: 'email', label: 'Email', type: 'email', value: form.values.email || '', autocomplete: 'off', inputmode: 'email', maxlength: 254, spellcheck: 'false', error: form.errors.email }) %>
+    <div class="field">
+      <label class="field__label" for="role">Role</label>
+      <select class="field__input" id="role" name="role" required<% if (form.errors.role) { %> aria-invalid="true" aria-describedby="role-error"<% } %>>
+        <% roles.forEach(function (role) { %><option value="<%= role %>"<%= role === form.values.role ? ' selected' : '' %>><%= role %></option><% }) %>
+      </select>
+      <% if (form.errors.role) { %><p class="field__error" id="role-error"><%- icon('circle-alert', 'h-4 w-4') %><span><%= form.errors.role %></span></p><% } %>
+    </div>
+    <%- include('../partials/field', { id: 'password', name: 'password', label: 'Temporary password', hint: 'Generated for you. You can replace it.', value: form.values.password || '', autocomplete: 'off', maxlength: 128, spellcheck: 'false', error: form.errors.password }) %>
+    <%- include('../partials/reauth') %>
+    <div class="flex flex-wrap gap-3">
+      <button type="submit" class="btn btn-primary">Create user</button>
+      <a class="btn btn-secondary" href="<%= adminBase %>/users">Cancel</a>
+    </div>
+  </form>
+</section>

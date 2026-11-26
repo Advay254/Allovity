@@ -1,0 +1,21 @@
+<section class="admin-card admin-card--narrow" aria-labelledby="page-title">
+  <h1 id="page-title" class="text-h3 font-semibold"><%= spec.title %></h1>
+  <p class="mt-2 text-small text-muted"><%= spec.message %></p>
+  <% if (form.errors.form) { %><div class="mt-4"><%- include('../partials/alert', { kind: 'danger', message: form.errors.form }) %></div><% } %>
+  <form class="form mt-6" method="post" action="<%= spec.action %>" data-submit-once>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (spec.roleChoices) { %>
+    <div class="field">
+      <label class="field__label" for="role">New role</label>
+      <select class="field__input" id="role" name="role" required>
+        <% spec.roleChoices.forEach(function (role) { %><option value="<%= role %>"<%= role === spec.currentRole ? ' selected' : '' %>><%= role %></option><% }) %>
+      </select>
+    </div>
+    <% } %>
+    <%- include('../partials/reauth') %>
+    <div class="flex flex-wrap gap-3">
+      <button type="submit" class="btn <%= spec.danger ? 'btn-danger' : 'btn-primary' %>"><%= spec.button %></button>
+      <a class="btn btn-secondary" href="<%= spec.cancel %>">Cancel</a>
+    </div>
+  </form>
+</section>

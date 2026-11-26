@@ -1,0 +1,14 @@
+<h1 class="text-h2 font-semibold">Dashboard</h1>
+<p class="mt-2 text-small text-muted">Signed in as <%= me.displayName %>.</p>
+<section class="admin-card mt-8" aria-labelledby="security-title">
+  <div class="admin-icon"><%- icon('shield-check') %></div>
+  <h2 id="security-title" class="text-h3 font-semibold">Your security</h2>
+  <dl class="admin-kv">
+    <dt>Two-step</dt><dd><%= summary.twoStep ? 'On' : 'Off' %></dd>
+    <dt>Previous sign-in</dt><dd><%= summary.previousSignIn ? new Date(summary.previousSignIn).toUTCString() : 'This is your first sign-in' %></dd>
+    <dt>This session since</dt><dd><%= new Date(summary.sessionStarted).toUTCString() %></dd>
+    <dt>Active sessions</dt><dd class="tabular-nums"><%= summary.activeSessions %></dd>
+  </dl>
+  <% if (!summary.twoStep) { %><a class="btn btn-primary btn-sm mt-6" href="<%= adminBase %>/two-step/setup">Set up two-step verification</a><% } %>
+  <a class="btn btn-secondary btn-sm mt-6" href="<%= adminBase %>/account">Manage account</a>
+</section>

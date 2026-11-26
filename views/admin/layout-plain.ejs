@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= meta.title %> | <%= site.name %></title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="<%= site.themeColor %>">
+  <meta name="color-scheme" content="only light">
+  <link rel="icon" href="<%= asset('brand.symbol.svg') %>" type="image/svg+xml">
+  <link rel="preload" href="<%= asset('font.space-grotesk') %>" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="<%= asset('font.inter') %>" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="<%= asset('admin.css') %>">
+  <script src="<%= asset('page-init.js') %>"></script>
+</head>
+<body data-page="<%= meta.pageId %>">
+  <div class="admin-shell">
+    <div class="admin-bar">
+      <span class="admin-brand"><%- include('../partials/symbol') %><%= site.name %> Admin</span>
+    </div>
+    <main id="main" class="admin-main" tabindex="-1">
+      <%- body %>
+    </main>
+    <p class="admin-foot">&copy; <span class="tabular-nums"><%= year %></span> <%= site.name %></p>
+  </div>
+  <% if (meta.pageScript) { %><script src="<%= asset(meta.pageScript) %>" defer></script><% } %>
+</body>
+</html>

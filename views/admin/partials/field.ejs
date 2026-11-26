@@ -1,0 +1,23 @@
+<%
+  var errorId = id + '-error';
+  var hintId = id + '-hint';
+  var invalid = !!error;
+  var describedBy = [];
+  if (typeof hint !== 'undefined' && hint) describedBy.push(hintId);
+  if (invalid) describedBy.push(errorId);
+%>
+<div class="field">
+  <label class="field__label" for="<%= id %>"><%= label %></label>
+  <% if (typeof hint !== 'undefined' && hint) { %><p class="field__hint" id="<%= hintId %>"><%= hint %></p><% } %>
+  <input class="field__input" id="<%= id %>" name="<%= name %>" type="<%= typeof type === 'undefined' ? 'text' : type %>"
+    value="<%= typeof value === 'undefined' ? '' : value %>"
+    <% if (typeof autocomplete !== 'undefined') { %>autocomplete="<%= autocomplete %>"<% } %>
+    <% if (typeof inputmode !== 'undefined') { %>inputmode="<%= inputmode %>"<% } %>
+    <% if (typeof maxlength !== 'undefined') { %>maxlength="<%= maxlength %>"<% } %>
+    <% if (typeof autofocus !== 'undefined' && autofocus) { %>autofocus<% } %>
+    <% if (typeof spellcheck !== 'undefined') { %>spellcheck="<%= spellcheck %>"<% } %>
+    required
+    <% if (invalid) { %>aria-invalid="true"<% } %>
+    <% if (describedBy.length) { %>aria-describedby="<%= describedBy.join(' ') %>"<% } %>>
+  <% if (invalid) { %><p class="field__error" id="<%= errorId %>"><%- icon('circle-alert', 'h-4 w-4') %><span><%= error %></span></p><% } %>
+</div>

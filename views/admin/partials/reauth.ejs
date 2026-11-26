@@ -1,0 +1,3 @@
+<% if (needsPassword) { %>
+<%- include('field', { id: 'currentPassword', name: 'currentPassword', label: 'Confirm with your password', hint: 'Needed because you have not entered it in the last 5 minutes.', type: 'password', autocomplete: 'current-password', maxlength: 1024, error: form.errors.currentPassword }) %>
+<% } %>

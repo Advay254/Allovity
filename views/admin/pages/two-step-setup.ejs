@@ -1,0 +1,19 @@
+<section class="admin-panel admin-panel--wide" aria-labelledby="page-title">
+  <div class="admin-icon"><%- icon('shield-check') %></div>
+  <h1 id="page-title" class="text-h3 font-semibold">Set up two-step verification</h1>
+  <% if (required) { %><div class="mt-4"><%- include('../partials/alert', { kind: 'info', message: 'Two-step verification is required for admin users. Finish this to continue.' }) %></div><% } %>
+  <ol class="steps mt-6">
+    <li>Open an authenticator app (any app that supports time-based codes) and add an account.</li>
+    <li>Scan this code, or type the key below into the app.</li>
+  </ol>
+  <div class="qr" role="img" aria-label="QR code for your authenticator app"><%- details.qrSvg %></div>
+  <p class="mt-4 text-caption text-muted">Manual key</p>
+  <p class="manual-key"><code><%= details.manualKey %></code></p>
+  <form class="form mt-6" method="post" action="<%= adminBase %>/two-step/setup" data-submit-once>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <%- include('../partials/field', { id: 'code', name: 'code', label: 'Code from the app', hint: 'Enter the 6 digit code to confirm it works.', autocomplete: 'one-time-code', inputmode: 'numeric', maxlength: 20, error: form.errors.code }) %>
+    <button type="submit" class="btn btn-primary w-full">Turn on</button>
+  </form>
+  <% if (!required) { %><a class="btn btn-secondary btn-sm mt-4" href="<%= adminBase %>/account">Cancel</a><% } else { %>
+  <form method="post" action="<%= adminBase %>/logout" class="mt-4"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="btn btn-secondary btn-sm">Sign out</button></form><% } %>
+</section>

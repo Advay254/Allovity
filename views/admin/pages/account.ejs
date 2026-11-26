@@ -1,0 +1,59 @@
+<h1 class="text-h2 font-semibold">Account</h1>
+<% if (flash) { %><div class="mt-6"><%- include('../partials/alert', { kind: 'success', message: flash }) %></div><% } %>
+
+<section class="admin-card mt-8" aria-labelledby="pw-title">
+  <h2 id="pw-title" class="text-h3 font-semibold">Change password</h2>
+  <form class="form mt-4" method="post" action="<%= adminBase %>/account/password" data-submit-once>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <%- include('../partials/reauth') %>
+    <%- include('../partials/field', { id: 'password', name: 'password', label: 'New password', hint: 'At least 12 characters.', type: 'password', autocomplete: 'new-password', maxlength: 1024, error: form.errors.password }) %>
+    <%- include('../partials/field', { id: 'confirm', name: 'confirm', label: 'Repeat the new password', type: 'password', autocomplete: 'new-password', maxlength: 1024, error: form.errors.confirm }) %>
+    <button type="submit" class="btn btn-primary">Change password</button>
+  </form>
+</section>
+
+<section class="admin-card mt-6" aria-labelledby="ts-title">
+  <h2 id="ts-title" class="text-h3 font-semibold">Two-step verification</h2>
+  <% if (me.twoStepEnabled) { %>
+    <p class="mt-2 text-small text-muted">On. <span class="tabular-nums"><%= recoveryCodesLeft %></span> unused recovery codes.</p>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <a class="btn btn-secondary btn-sm" href="<%= adminBase %>/account/recovery-codes">New recovery codes</a>
+      <% if (!twoStepRequired) { %><a class="btn btn-secondary btn-sm" href="<%= adminBase %>/account/two-step/disable">Turn off</a><% } %>
+    </div>
+    <% if (twoStepRequired) { %><p class="mt-3 text-caption text-muted">Two-step verification is required for admin users, so it cannot be turned off.</p><% } %>
+  <% } else { %>
+    <p class="mt-2 text-small text-muted">Off. Add an authenticator app to protect your account.</p>
+    <a class="btn btn-primary btn-sm mt-4" href="<%= adminBase %>/two-step/setup">Set up</a>
+  <% } %>
+  <% if (form.errors.form) { %><div class="mt-4"><%- include('../partials/alert', { kind: 'danger', message: form.errors.form }) %></div><% } %>
+</section>
+
+<section class="admin-card mt-6" aria-labelledby="sess-title">
+  <h2 id="sess-title" class="text-h3 font-semibold">Active sessions</h2>
+  <div class="table-wrap mt-4">
+    <table class="admin-table">
+      <thead><tr><th scope="col">Device</th><th scope="col">Address</th><th scope="col">Last active</th><th scope="col"><span class="sr-only">Action</span></th></tr></thead>
+      <tbody>
+        <% sessions.forEach(function (item) { %>
+        <tr>
+          <td data-label="Device"><%= item.device %><% if (item.current) { %> <span class="badge">This device</span><% } %></td>
+          <td data-label="Address" class="tabular-nums"><%= item.ip || 'Unknown' %></td>
+          <td data-label="Last active" class="tabular-nums"><%= new Date(item.lastSeenAt).toUTCString() %></td>
+          <td data-label="Action">
+            <form method="post" action="<%= adminBase %>/account/sessions/<%= item.id %>/revoke" data-submit-once>
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn-secondary btn-sm"><%= item.current ? 'Sign out here' : 'Sign out' %></button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (sessions.length > 1) { %>
+  <form method="post" action="<%= adminBase %>/account/sessions/revoke-others" class="mt-4" data-submit-once>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="btn btn-secondary btn-sm">Sign out all other sessions</button>
+  </form>
+  <% } %>
+</section>

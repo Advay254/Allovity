@@ -1,0 +1,41 @@
+<h1 class="text-h2 font-semibold">Audit log</h1>
+<p class="mt-2 text-small text-muted">Newest first. Entries cannot be changed or removed.</p>
+<form class="filters mt-6" method="get" action="<%= adminBase %>/audit">
+  <div class="field">
+    <label class="field__label" for="f-action">Event</label>
+    <select class="field__input" id="f-action" name="action">
+      <option value="">All events</option>
+      <% actions.forEach(function (a) { %><option value="<%= a %>"<%= a === filter.action ? ' selected' : '' %>><%= a %></option><% }) %>
+    </select>
+  </div>
+  <div class="field">
+    <label class="field__label" for="f-user">Person</label>
+    <select class="field__input" id="f-user" name="user">
+      <option value="">Everyone</option>
+      <% actorOptions.forEach(function (o) { %><option value="<%= o.value %>"<%= o.value === filter.user ? ' selected' : '' %>><%= o.label %></option><% }) %>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+</form>
+<div class="table-wrap mt-6">
+  <table class="admin-table">
+    <thead><tr><th scope="col">When (UTC)</th><th scope="col">Event</th><th scope="col">Who</th><th scope="col">Address</th><th scope="col">Details</th></tr></thead>
+    <tbody>
+      <% if (!rows.length) { %><tr><td colspan="5">No events match.</td></tr><% } %>
+      <% rows.forEach(function (row) { %>
+      <tr>
+        <td data-label="When (UTC)" class="tabular-nums"><%= new Date(row.createdAt).toISOString().replace('T', ' ').slice(0, 19) %></td>
+        <td data-label="Event"><code><%= row.action %></code></td>
+        <td data-label="Who"><%= row.actorName %></td>
+        <td data-label="Address" class="tabular-nums"><%= row.ip || 'None' %></td>
+        <td data-label="Details"><%= row.details.join(', ') || 'None' %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<nav class="pager mt-6" aria-label="Pages">
+  <% if (newerHref !== null) { %><a class="btn btn-secondary btn-sm" href="<%= adminBase %>/audit<%= newerHref %>">Newer</a><% } %>
+  <span class="text-caption text-muted">Page <span class="tabular-nums"><%= page %></span></span>
+  <% if (olderHref !== null) { %><a class="btn btn-secondary btn-sm" href="<%= adminBase %>/audit<%= olderHref %>">Older</a><% } %>
+</nav>

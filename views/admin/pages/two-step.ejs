@@ -1,0 +1,27 @@
+<section class="admin-panel" aria-labelledby="page-title">
+  <div class="admin-icon"><%- icon('shield-check') %></div>
+  <h1 id="page-title" class="text-h3 font-semibold">Two-step verification</h1>
+  <% if (recoveryMode) { %>
+    <p class="mt-2 text-small text-muted">Enter one of your unused recovery codes. Each code works once.</p>
+  <% } else { %>
+    <p class="mt-2 text-small text-muted">Enter the 6 digit code from your authenticator app.</p>
+  <% } %>
+  <form class="form mt-6" method="post" action="<%= adminBase %>/login/two-step" data-submit-once>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (recoveryMode) { %>
+      <input type="hidden" name="mode" value="recovery">
+      <%- include('../partials/field', { id: 'recovery', name: 'recovery', label: 'Recovery code', autocomplete: 'off', maxlength: 40, spellcheck: 'false', autofocus: true, error: form.errors.code }) %>
+    <% } else { %>
+      <%- include('../partials/field', { id: 'code', name: 'code', label: 'Authentication code', autocomplete: 'one-time-code', inputmode: 'numeric', maxlength: 20, autofocus: true, error: form.errors.code }) %>
+    <% } %>
+    <button type="submit" class="btn btn-primary w-full">Verify</button>
+  </form>
+  <p class="mt-6 text-small">
+    <% if (recoveryMode) { %><a class="link" href="<%= adminBase %>/login/two-step">Use an authenticator code instead</a>
+    <% } else { %><a class="link" href="<%= adminBase %>/login/two-step?mode=recovery">Use a recovery code instead</a><% } %>
+  </p>
+  <form method="post" action="<%= adminBase %>/logout" class="mt-4">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="btn btn-secondary btn-sm">Cancel and sign out</button>
+  </form>
+</section>

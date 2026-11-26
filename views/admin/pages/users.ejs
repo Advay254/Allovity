@@ -1,0 +1,30 @@
+<div class="admin-head">
+  <h1 class="text-h2 font-semibold">Users</h1>
+  <% if (canCreate) { %><a class="btn btn-primary btn-sm" href="<%= adminBase %>/users/new">Create user</a><% } %>
+</div>
+<% var flashes = { created: 'The account was created. They must change the temporary password at first sign-in.', role: 'The role was changed. Their sessions were signed out.', deactivated: 'The account was deactivated and its sessions were signed out.', reactivated: 'The account was reactivated.', 'two-step-reset': 'Two-step verification was reset. Their sessions were signed out.' }; %>
+<% if (flashes[doneKey]) { %><div class="mt-6"><%- include('../partials/alert', { kind: 'success', message: flashes[doneKey] }) %></div><% } %>
+<div class="table-wrap mt-6">
+  <table class="admin-table">
+    <thead><tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Two-step</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>
+      <% users.forEach(function (user) { %>
+      <tr>
+        <td data-label="Name"><strong><%= user.displayName %></strong><% if (user.isMe) { %> <span class="badge">You</span><% } %><br><span class="text-caption text-muted"><%= user.email %></span></td>
+        <td data-label="Role"><%= user.role %></td>
+        <td data-label="Status"><%= user.active ? 'Active' : 'Inactive' %><% if (user.mustChangePassword) { %><br><span class="text-caption text-muted">Must change password</span><% } %></td>
+        <td data-label="Two-step"><%= user.twoStepEnabled ? 'On' : 'Off' %></td>
+        <% var anyAction = user.can.role || user.can.resetTwoStep || user.can.deactivate || user.can.reactivate; %>
+        <td<% if (anyAction) { %> data-label="Actions"<% } else { %> class="max-md:hidden"<% } %>>
+          <% if (anyAction) { %><div class="row-actions">
+            <% if (user.can.role) { %><a class="btn btn-secondary btn-sm" href="<%= adminBase %>/users/<%= user.id %>/role">Change role</a><% } %>
+            <% if (user.can.resetTwoStep) { %><a class="btn btn-secondary btn-sm" href="<%= adminBase %>/users/<%= user.id %>/reset-two-step">Reset two-step</a><% } %>
+            <% if (user.can.deactivate) { %><a class="btn btn-secondary btn-sm" href="<%= adminBase %>/users/<%= user.id %>/deactivate">Deactivate</a><% } %>
+            <% if (user.can.reactivate) { %><a class="btn btn-secondary btn-sm" href="<%= adminBase %>/users/<%= user.id %>/reactivate">Reactivate</a><% } %>
+          </div><% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

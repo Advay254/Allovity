@@ -1,0 +1,5 @@
+<ul class="<%= variant === 'drawer' ? 'admin-drawer__nav' : 'admin-nav' %>">
+  <% navItems.forEach(function (item) { %>
+  <li><a class="<%= variant === 'drawer' ? 'admin-drawer__link' : 'admin-nav__link' %>" href="<%= adminBase %><%= item.path === '/' ? '/' : item.path %>"<% if (item.id === navId) { %> aria-current="page"<% } %> <% if (variant === 'drawer') { %>data-drawer-close<% } %>><%- icon(item.icon, 'h-5 w-5') %><span><%= item.label %></span></a></li>
+  <% }) %>
+</ul>
