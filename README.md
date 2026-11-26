@@ -4,7 +4,7 @@ Allovity is an independent software engineering studio. Tagline: "Engineering wh
 
 This repository is the production website: one Node application backed by Postgres.
 
-Current version: 1.0.0 (foundation). See `docs/VERSIONS.md`.
+Current version: 1.1.0 (admin sign-in and security). See `docs/VERSIONS.md`.
 
 ## Where to look
 
@@ -14,6 +14,7 @@ Current version: 1.0.0 (foundation). See `docs/VERSIONS.md`.
 | Every environment variable             | `docs/ENVIRONMENT.md` and `.env.example` |
 | How the code is organised and why      | `docs/ARCHITECTURE.md`                   |
 | Replace the placeholder logo and icons | `brand/README.md`                        |
+| Admin sign-in, roles and recovery      | `docs/ADMIN.md`                          |
 | Version history                        | `docs/VERSIONS.md`                       |
 
 ## Stack

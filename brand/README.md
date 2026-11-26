@@ -5,10 +5,9 @@ Everything in this folder is a placeholder. It is not the official Allovity bran
 | File                    | Purpose                                                                                                         |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `symbol.svg`            | Abstract symbol: a forward chevron built from two modules, plus one detached module. Flat colour, no gradients. |
-| `wordmark.svg`          | Symbol and wordmark for dark backgrounds. Text is converted to paths, so it needs no font.                      |
-| `wordmark-on-light.svg` | The same wordmark for light backgrounds.                                                                        |
-| `app-icon.svg`          | Symbol on a dark square. Source for the app icons.                                                              |
-| `og-image.svg`          | 1200 by 630 social sharing image. Source for the PNG.                                                           |
+| `wordmark-on-light.svg` | Symbol and wordmark for light backgrounds. Text is converted to paths, so it needs no font.                     |
+| `app-icon.svg`          | White symbol on a flat brand blue square. Source for the app icons.                                             |
+| `og-image.svg`          | 1200 by 630 social sharing image on the light background. Source for the PNG.                                   |
 
 The build (`npm run build:assets`) turns these into the favicon, PNG app icons and the social image. No binary files are stored in the repository.
 
