@@ -3,7 +3,7 @@
 # Stage 1: build the TypeScript, the CSS bundles and the static assets.
 FROM node:22-slim AS build
 WORKDIR /app
-COPY package.json ./
+COPY package.json .npmrc ./
 RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build
@@ -12,7 +12,7 @@ RUN npm run build
 FROM node:22-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
-COPY package.json ./
+COPY package.json .npmrc ./
 RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/views ./views
