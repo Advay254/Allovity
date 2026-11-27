@@ -3,6 +3,7 @@ import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runMigrations } from '../src/db/migrate.js';
 import { MIGRATIONS_DIR } from '../src/lib/paths.js';
+import { MemoryRateLimitStore } from '../src/security/rate-limit-store.js';
 import { buildTestApp, captureLogger, SITE_URL, SLUG } from './helpers/app.js';
 import { createTestDatabase, type TestDatabase } from './helpers/db.js';
 
@@ -174,7 +175,9 @@ describe('security headers', () => {
   });
 });
 
-describe('admin placeholder', () => {
+const memoryStore = () => new MemoryRateLimitStore({ maxKeys: 1000, pruneIntervalMs: 0 });
+
+describe('admin entrance', () => {
   it('returns the normal 404 for the plain admin path and common guesses', async () => {
     const { app } = buildTestApp();
     for (const path of ['/admin', '/admin/', '/administrator', '/wp-admin', '/dashboard']) {
@@ -189,33 +192,31 @@ describe('admin placeholder', () => {
     expect((await request(app).get(`/${SLUG.toLowerCase()}`)).status).toBe(404);
   });
 
-  it('serves the placeholder at the secret path with the indexing header and no cookies', async () => {
-    const { app } = buildTestApp();
-    const res = await request(app).get(`/${SLUG}`);
+  it('sends signed-out visitors from the secret path to the sign-in page', async () => {
+    const { app } = buildTestApp({ adminRateLimitStore: memoryStore() });
+    const entry = await request(app).get(`/${SLUG}`);
+    expect(entry.status).toBe(303);
+    expect(entry.headers.location).toBe(`/${SLUG}/login`);
+    const res = await request(app).get(`/${SLUG}/login`);
     expect(res.status).toBe(200);
-    expect(res.text).toContain('The admin area is not yet available.');
+    expect(res.text).toContain('Sign in');
     expect(res.headers['x-robots-tag']).toContain('noindex');
-    expect(res.headers['set-cookie']).toBeUndefined();
     expect(res.headers['cache-control']).toBe('no-store');
+    expect(res.headers['referrer-policy']).toBe('no-referrer');
     expect(res.text).toMatch(/admin\.[0-9a-f]{10}\.css/);
     expect(res.text).not.toMatch(/public\.[0-9a-f]{10}\.css/);
-    expect(res.text).not.toContain('<form');
-    expect(res.text).not.toContain('<input');
   });
 
-  it('keeps the indexing header on everything under the path and rejects other methods', async () => {
-    const { app } = buildTestApp();
+  it('keeps the indexing header on everything under the path', async () => {
+    const { app } = buildTestApp({ adminRateLimitStore: memoryStore() });
     const sub = await request(app).get(`/${SLUG}/anything`);
     expect(sub.status).toBe(404);
     expect(sub.headers['x-robots-tag']).toContain('noindex');
-    const post = await request(app).post(`/${SLUG}`).send({});
-    expect(post.status).toBe(405);
-    expect(post.headers['allow']).toBe('GET, HEAD');
   });
 
   it('serves the admin stylesheet bundle', async () => {
-    const { app } = buildTestApp();
-    const html = (await request(app).get(`/${SLUG}`)).text;
+    const { app } = buildTestApp({ adminRateLimitStore: memoryStore() });
+    const html = (await request(app).get(`/${SLUG}/login`)).text;
     const href = /href="(\/static\/admin\.[0-9a-f]{10}\.css)"/.exec(html)?.[1];
     expect(href).toBeTruthy();
     const css = await request(app).get(href as string);
@@ -224,7 +225,7 @@ describe('admin placeholder', () => {
   });
 
   it('never writes the secret path to the logs', async () => {
-    const { app, lines } = buildTestApp();
+    const { app, lines } = buildTestApp({ adminRateLimitStore: memoryStore() });
     await request(app).get(`/${SLUG}`);
     await request(app).get(`/${SLUG}/deeper`);
     const joined = lines.join('\n');
