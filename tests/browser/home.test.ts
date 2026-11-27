@@ -32,7 +32,7 @@ async function open(
   const context = await browser.newContext({
     viewport: { width, height: 800 },
     reducedMotion: options.reducedMotion,
-    colorScheme: options.scheme ?? 'dark',
+    colorScheme: options.scheme ?? 'light',
   });
   const page = await context.newPage();
   const problems: string[] = [];
@@ -146,26 +146,44 @@ describe('mobile drawer keyboard behaviour', () => {
   });
 });
 
-describe('theme control', () => {
-  it('remembers the choice and applies it before the page is interactive', async () => {
-    const { page, context } = await open(1440, { scheme: 'dark' });
-    await page.click('.theme-control-desktop [data-theme-set="light"]');
-    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('light');
-    await page.reload({ waitUntil: 'domcontentloaded' });
-    // The attribute is already set when the document has only just been parsed.
-    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('light');
-    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(bg).toBe('rgb(247, 249, 252)');
-    await page.click('.theme-control-desktop [data-theme-set="system"]');
-    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBeUndefined();
+describe('light only', () => {
+  it('has no theme control on the page or in the drawer', async () => {
+    const { page, context } = await open(375);
+    expect(
+      await page.locator('[data-theme-set], .theme-control, [aria-label*="theme" i]').count(),
+    ).toBe(0);
+    await page.click('[data-drawer-open]');
+    expect(
+      await page.locator('#site-drawer [data-theme-set], #site-drawer .theme-control').count(),
+    ).toBe(0);
     await context.close();
   });
 
-  it('follows the system preference by default', async () => {
-    const { page, context } = await open(1440, { scheme: 'light' });
+  it('keeps the light background for a visitor whose system is set to dark', async () => {
+    const { page, context } = await open(1440, { scheme: 'dark' });
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
       'rgb(247, 249, 252)',
     );
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe(
+      'light only',
+    );
+    await context.close();
+  });
+
+  it('writes nothing about theme to local storage and sets no theme attributes', async () => {
+    const { page, context } = await open(1440, { scheme: 'dark' });
+    const state = await page.evaluate(() => ({
+      keys: Object.keys(window.localStorage),
+      attributes: document.documentElement.getAttributeNames(),
+    }));
+    expect(state.keys).toEqual([]);
+    expect(state.attributes.filter((name) => name.startsWith('data-theme'))).toEqual([]);
+    await context.close();
+  });
+
+  it('still adds the js class so the navigation fallback works', async () => {
+    const { page, context } = await open(1440);
+    expect(await page.evaluate(() => document.documentElement.classList.contains('js'))).toBe(true);
     await context.close();
   });
 });
